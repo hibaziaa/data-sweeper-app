@@ -18,6 +18,7 @@ if uploaded_files:
 		file_ext = os.path.splitext(file.name)[1].lower()
 		if file_ext == ".csv":
 			df = pd.read_csv(file)
+			df = df.apply(pd.to_numeric, errors='coerce')  # Ensure numerical columns remain numeric
 		elif file_ext == ".xlsx":
 			df = pd.read_excel(file)
 		else:
@@ -55,7 +56,12 @@ if uploaded_files:
 		# create some visualizations 
 		st.subheader("📊 Data Visualizations")
 		if st.checkbox(f"Show Visualizations for {file.name}"):
-			st.bar_chart(df.select_dtypes(include=["number"]).iloc[:,:2])
+			numeric_df = df.select_dtypes(include=["number"])
+			if not numeric_df.empty:  # Ensure we have numerical data to plot
+				st.bar_chart(numeric_df.iloc[:, :2])
+			else:
+				st.warning(f"No numeric columns found in {file.name}. Check if the data types are correct.")
+
 
 		# Initialize buffer and file_name before using them
 		buffer = None  
